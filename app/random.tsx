@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -15,8 +15,15 @@ export default function RandomScreen() {
   const [max, setMax] = useState<string>("100");
   const [result, setResult] = useState<number | null>(null);
   const [error, setError] = useState<string>("");
+  const [isSpinning, setIsSpinning] = useState<boolean>(false);
+
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const subTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const roll = () => {
+    if (isSpinning) return;
+
     const nMin = Number(min);
     const nMax = Number(max);
     if (!isValidRange(nMin, nMax)) {
@@ -25,7 +32,47 @@ export default function RandomScreen() {
       return;
     }
     setError("");
-    setResult(getRandomIntInclusive(nMin, nMax));
+
+    // 最終結果を先に決める
+    const finalResult = getRandomIntInclusive(nMin, nMax);
+
+    // スピン演出：10回は一時表示、11回目に確定
+    setIsSpinning(true);
+
+    // 範囲内のランダムな値を生成する関数
+    const randomPick = () => getRandomIntInclusive(nMin, nMax);
+
+    let tick = 0;
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    // 1サイクル: 空表示 -> 候補表示（回数カウント）
+    const cycleIntervalMs = 160;
+    const blankDurationMs = 80;
+    intervalRef.current = setInterval(() => {
+      // まず空表示
+      setResult(null);
+      // 少し待ってから候補を表示し、そこでカウント
+      if (subTimeoutRef.current) clearTimeout(subTimeoutRef.current);
+      subTimeoutRef.current = setTimeout(() => {
+        setResult(randomPick());
+        tick += 1;
+        if (tick >= 10 && intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+          // 最終表示に行く前にサブタイマー不要
+          if (subTimeoutRef.current) {
+            clearTimeout(subTimeoutRef.current);
+            subTimeoutRef.current = null;
+          }
+          // 少し間を置いて最終結果で停止
+          timeoutRef.current = setTimeout(() => {
+            setResult(finalResult);
+            setIsSpinning(false);
+          }, 200);
+        }
+      }, blankDurationMs);
+    }, cycleIntervalMs);
   };
 
   const getRandomIntInclusive = (min: number, max: number): number => {
@@ -43,6 +90,14 @@ export default function RandomScreen() {
       Math.floor(min) <= Math.floor(max)
     );
   };
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (subTimeoutRef.current) clearTimeout(subTimeoutRef.current);
+    };
+  }, []);
 
   return (
     <KeyboardAvoidingView
@@ -104,17 +159,19 @@ export default function RandomScreen() {
           <View style={{ alignItems: "center", marginVertical: 10 }}>
             <Text style={{ fontSize: 16, color: "#666" }}>結果</Text>
             <Text style={{ fontSize: 100, fontWeight: "bold", margin: 20 }}>
-              {result === null ? "—" : String(result)}
+              {result === null ? "" : String(result)}
             </Text>
           </View>
           <TouchableOpacity
             onPress={roll}
+            disabled={isSpinning}
             style={{
               backgroundColor: "#000",
               padding: 14,
               borderRadius: 10,
               marginTop: 8,
               minWidth: 300,
+              opacity: isSpinning ? 0.6 : 1,
             }}
           >
             <Text

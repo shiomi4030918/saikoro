@@ -2,7 +2,7 @@
   "expo": {
     "name": "サイコロ最高",
     "slug": "Saikoro",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "saikoro",
@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.aki.saikoro",
-      "buildNumber": "1.0.1",
+      "buildNumber": "1.0.2",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
