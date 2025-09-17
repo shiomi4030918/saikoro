@@ -17,13 +17,13 @@ export default function Index() {
       />
       <TouchableOpacity
         onPress={() => {
-          console.log("サイコロを振る");
           router.push("/card");
         }}
         style={{
           backgroundColor: "#000",
           padding: 10,
           borderRadius: 10,
+          width: 250,
         }}
       >
         <Text
@@ -49,6 +49,7 @@ export default function Index() {
           padding: 10,
           borderRadius: 10,
           marginTop: 20,
+          width: 250,
         }}
       >
         <Text
@@ -62,6 +63,31 @@ export default function Index() {
           }}
         >
           サイコロを振る
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          router.push("/random");
+        }}
+        style={{
+          backgroundColor: "#000",
+          padding: 10,
+          borderRadius: 10,
+          marginTop: 20,
+          width: 250,
+        }}
+      >
+        <Text
+          style={{
+            color: "#fff",
+            fontSize: 20,
+            fontWeight: "bold",
+            textAlign: "center",
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+          }}
+        >
+          乱数ジェネレーター
         </Text>
       </TouchableOpacity>
     </View>
